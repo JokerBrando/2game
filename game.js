@@ -12,11 +12,11 @@ var config = {
                 debug: true
             }
         },
-        
+
         preload: preload,
         create: create, 
         update: update
-        
+
     }
 };
 
@@ -74,19 +74,19 @@ function create() {
 function update() {
     // Рух космічного корабля
     if (this.input.activePointer.isDown) {
-       
+
         var angle = Phaser.Math.Angle.Between(this.spaceship.x, this.spaceship.y, this.input.x, this.input.y);
         // Задаємо кут повороту корабля
         this.spaceship.setRotation(angle);
         // Рух до позиції курсора
 
-     
+
         if (isAccelerating) {
             this.physics.moveTo(this.spaceship, this.input.x, this.input.y, 400); // Збільшення швидкості до 400
         } else {
             this.physics.moveTo(this.spaceship, this.input.x, this.input.y, 200);
         }
-        
+
     }
 
     // Видалення сміття, яке виходить за межі екрану
