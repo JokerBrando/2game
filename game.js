@@ -5,7 +5,7 @@ var config = {
     height: 500,
     scene: {
 
-        parent:game,
+        
         physics: {  //задаємо стиль фізики гри
             default: 'arcade',
             arcade: {
@@ -20,6 +20,9 @@ var config = {
     }
 };
 
+var video;
+var audio;
+var trash;
 var spaceship;
 var game = new Phaser.Game(config);
 var spaceKey;
@@ -27,6 +30,9 @@ var isAccelerating = false;
 
 // Попереднє завантаження ресурсів
 function preload() {
+    this.load.video('2', 'assets/2.mp4', 'loadeddata', false, true); // Завантаження відео
+    this.load.audio('1', 'assets/1.mp3'); // Завантаження аудіо
+
     this.load.image('space', 'assets/space.jpg');
     this.load.image('spaceship', 'assets/spaceship1.png');
     this.load.image('trash', 'assets/trash1.png');
@@ -101,7 +107,7 @@ function create() {
 
 // Додавання сміття
 this.time.addEvent({
-    delay: 2000, // кожні 2 секунди
+    delay: 1000, // кожні 1 секунди
     loop: true,
     callback: function () {
         var side = Phaser.Math.Between(0, 3); // вибираємо випадкову сторону
@@ -122,10 +128,9 @@ this.time.addEvent({
             y = game.config.height;
         }
 
-        var trash = this.trash.create(x, y, 'trash');
-        var velocityX = Phaser.Math.Between(-200, 200); // Випадкова швидкість по X
-        var velocityY = Phaser.Math.Between(-200, 200); // Випадкова швидкість по Y
-        trash.setVelocity(velocityX, velocityY);
+        var trash = this.trash.create(x, y, 'trash'); 
+        this.physics.moveToObject(trash, this.spaceship, 200); 
+ 
     },
     callbackScope: this
 });
@@ -205,6 +210,9 @@ function collectTrash(spaceship, trash) {
     trash.disableBody(true, true);
     this.score += 10;
     this.scoreText.setText('Score: ' + this.score);
+
+    // Перевіряємо, чи досягнута кількість балів для відтворення відео та звуку
+    checkScore.call(this);
 }
 
 // Функція оновлення таймера
@@ -225,7 +233,7 @@ function gameOver() {
 
 // Реакція на зіткнення корабля з лазерами
 function shipHit(spaceship, dmg) {
-    this.score -= 100;
+    this.score -= 50;
     this.scoreText.setText('Score: ' + this.score);
 
     if (this.score < 0) {
@@ -244,4 +252,24 @@ function shipHit(spaceship, dmg) {
 // Функція для зупинки генерації сміття та лазерів
 function stopGenerating() {
     this.time.removeAllEvents(); // Видалення всіх подій з часової системи
+}
+
+function checkScore() {
+    if (this.score >= 200) {
+        playWinVideoAndSound.call(this); // Викликати функцію playWinVideoAndSound у контексті сцени
+        this.scene.pause(); // Пауза сцени
+    }
+}
+
+// Функція для відтворення відео та звуку при досягненні 200 очок
+function playWinVideoAndSound() {
+    // Відтворення звуку
+    audio = this.sound.add('1');
+    audio.play();
+   
+    // Відтворення відео
+    video = this.add.video(500, 250, '2'); // Позиція відео на екрані
+    video.play(true);
+    
+   
 }
