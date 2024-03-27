@@ -32,6 +32,7 @@ var isAccelerating = false;
 function preload() {
     this.load.video('2', 'assets/2.mp4', 'loadeddata', false, true); // Завантаження відео
     this.load.audio('1', 'assets/1.mp3'); // Завантаження аудіо
+    this.load.audio('ford', 'assets/ford.mp3'); // Завантаження аудіо
 
     this.load.image('space', 'assets/space.jpg');
     this.load.image('spaceship', 'assets/spaceship1.png');
@@ -195,6 +196,17 @@ function update() {
 
     }
 
+
+
+
+
+    // Перевіряємо рахунок і відтворюємо звук "ford", якщо рахунок менше 200
+    if (this.score < 200) {
+        playFordSound.call(this);
+    }
+
+
+
     // Видалення сміття, яке виходить за межі екрану
     this.trash.children.iterate(function (child) {
         if (child.x < -50) {
@@ -272,4 +284,21 @@ function playWinVideoAndSound() {
     video.play(true);
     
    
+}
+
+
+
+
+
+
+
+
+// Функція для відтворення звуку "ford"
+function playFordSound() {
+    // Перевіряємо, чи вже відтворюється звук "ford"
+    if (!audio || !audio.isPlaying) {
+        // Відтворення звуку "ford"
+        audio = this.sound.add('ford');
+        audio.play();
+    }
 }
