@@ -9,7 +9,7 @@ var config = {
         physics: {  //задаємо стиль фізики гри
             default: 'arcade',
             arcade: {
-                debug: true
+                debug: false
             }
         },
 
@@ -20,6 +20,7 @@ var config = {
     }
 };
 
+var spaceship;
 var game = new Phaser.Game(config);
 var spaceKey;
 var isAccelerating = false;
@@ -29,6 +30,7 @@ function preload() {
     this.load.image('space', 'assets/space.jpg');
     this.load.image('spaceship', 'assets/spaceship1.png');
     this.load.image('trash', 'assets/trash1.png');
+    this.load.image('dmg', 'assets/dmg.png');
 }
 
 // Основна функція гри
@@ -36,19 +38,113 @@ function create() {
     // Додавання фону
     this.add.image(0, 0, 'space').setOrigin(0);
 
+
+
     // Додавання космічного корабля
     this.spaceship = this.physics.add.sprite(287, 151, 'spaceship').setScale(0.2);
     this.spaceship.setCollideWorldBounds(true);
 
+
+
     // Додавання космічного сміття
     this.trash = this.physics.add.group({
         key: 'trash',
-        repeat: 11,
-        setXY: { x: 200, y: 200, stepX: 200 }
+        repeat: 2,
+        setXY: { x: 200, y: 200, stepX: 300 }
     });
 
     // Збір сміття
     this.physics.add.collider(this.spaceship, this.trash, collectTrash, null, this);
+
+
+
+
+
+
+
+
+    // Додавання лазерів
+    this.dmg = this.physics.add.group();
+
+    this.time.addEvent({
+        delay: 700, // кожні 0.7 секунди
+        loop: true,
+        callback: function () {
+            var side = Phaser.Math.Between(0, 3);
+            var x;
+            var y;
+
+            if (side === 0) {
+                x = 0;
+                y = Phaser.Math.Between(0, game.config.height);
+            } else if (side === 1) {
+                x = Phaser.Math.Between(0, game.config.width);
+                y = 0;
+            } else if (side === 2) {
+                x = game.config.width;
+                y = Phaser.Math.Between(0, game.config.height);
+            } else {
+                x = Phaser.Math.Between(0, game.config.width);
+                y = game.config.height;
+            }
+
+            var dmg = this.dmg.create(x, y, 'dmg'); // змінив змінну laser на dmg
+            this.physics.moveToObject(dmg, this.spaceship, 200); // Змінив spaceship на this.spaceship
+        },
+        callbackScope: this
+    });
+
+    // Додавання колізії між космічним кораблем і лазерами (dmg)
+    this.physics.add.collider(this.spaceship, this.dmg, shipHit, null, this); // Змінив spaceship на this.spaceship
+
+ 
+
+// Додавання сміття
+this.time.addEvent({
+    delay: 2000, // кожні 2 секунди
+    loop: true,
+    callback: function () {
+        var side = Phaser.Math.Between(0, 3); // вибираємо випадкову сторону
+        var x;
+        var y;
+
+        if (side === 0) { // зліва
+            x = 0;
+            y = Phaser.Math.Between(0, game.config.height);
+        } else if (side === 1) { // зверху
+            x = Phaser.Math.Between(0, game.config.width);
+            y = 0;
+        } else if (side === 2) { // справа
+            x = game.config.width;
+            y = Phaser.Math.Between(0, game.config.height);
+        } else { // знизу
+            x = Phaser.Math.Between(0, game.config.width);
+            y = game.config.height;
+        }
+
+        var trash = this.trash.create(x, y, 'trash');
+        var velocityX = Phaser.Math.Between(-200, 200); // Випадкова швидкість по X
+        var velocityY = Phaser.Math.Between(-200, 200); // Випадкова швидкість по Y
+        trash.setVelocity(velocityX, velocityY);
+    },
+    callbackScope: this
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Рахунок зібраного сміття
     this.score = 0;
@@ -68,7 +164,12 @@ function create() {
     spaceKey.on('up', function(event) {
         isAccelerating = false;
     });
+
+
+
 }
+
+
 
 // Функція оновлення
 function update() {
@@ -95,6 +196,8 @@ function update() {
             child.x = 1100;
         }
     });
+
+    
 }
 
 // Функція збору сміття
@@ -114,4 +217,31 @@ function gameOver() {
     this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' });
     this.physics.pause();
     this.timer.paused = true;
+    
+    setTimeout(() => {
+        location.reload(); // Оновлення сторінки через 5 секунд
+    }, 5000);
+}
+
+// Реакція на зіткнення корабля з лазерами
+function shipHit(spaceship, dmg) {
+    this.score -= 100;
+    this.scoreText.setText('Score: ' + this.score);
+
+    if (this.score < 0) {
+       
+        this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
+        this.physics.pause(); // Призупинення фізики гри
+        this.timer.paused = true; // Призупинення таймера
+        setTimeout(() => {
+            location.reload(); // Оновлення сторінки через 5 секунд
+        }, 5000);
+    }
+
+    dmg.destroy();
+}
+
+// Функція для зупинки генерації сміття та лазерів
+function stopGenerating() {
+    this.time.removeAllEvents(); // Видалення всіх подій з часової системи
 }
