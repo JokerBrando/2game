@@ -254,8 +254,8 @@ function shipHit(spaceship, dmg) {
         this.physics.pause(); // Призупинення фізики гри
         this.timer.paused = true; // Призупинення таймера
         setTimeout(() => {
-            location.reload(); // Оновлення сторінки через 5 секунд
-        }, 5000);
+            location.reload(); // Оновлення сторінки через 3 секунд
+        }, 3000);
     }
 
     dmg.destroy();
@@ -283,7 +283,9 @@ function playWinVideoAndSound() {
     video = this.add.video(500, 250, '2'); // Позиція відео на екрані
     video.play(true);
     
-   
+    setTimeout(() => {
+        location.reload(); // Оновлення сторінки через 210 секунд
+    }, 210000);
 }
 
 
