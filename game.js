@@ -96,13 +96,13 @@ function create() {
             }
 
             var dmg = this.dmg.create(x, y, 'dmg'); // змінив змінну laser на dmg
-            this.physics.moveToObject(dmg, this.spaceship, 200); // Змінив spaceship на this.spaceship
+            this.physics.moveToObject(dmg, this.spaceship, 200); 
         },
         callbackScope: this
     });
 
     // Додавання колізії між космічним кораблем і лазерами (dmg)
-    this.physics.add.collider(this.spaceship, this.dmg, shipHit, null, this); // Змінив spaceship на this.spaceship
+    this.physics.add.collider(this.spaceship, this.dmg, shipHit, null, this); 
 
  
 
@@ -239,8 +239,8 @@ function gameOver() {
     this.timer.paused = true;
     
     setTimeout(() => {
-        location.reload(); // Оновлення сторінки через 5 секунд
-    }, 5000);
+        location.reload(); // Оновлення сторінки через 3 секунд
+    }, 3000);
 }
 
 // Реакція на зіткнення корабля з лазерами
@@ -283,6 +283,7 @@ function playWinVideoAndSound() {
     video = this.add.video(500, 250, '2'); // Позиція відео на екрані
     video.play(true);
     
+
     setTimeout(() => {
         location.reload(); // Оновлення сторінки через 210 секунд
     }, 210000);
