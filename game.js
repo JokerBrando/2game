@@ -34,6 +34,8 @@ function preload() {
     this.load.audio('1', 'assets/1.mp3'); // Завантаження аудіо
     this.load.audio('ford', 'assets/ford.mp3'); // Завантаження аудіо
 
+    this.load.image('flowey', 'assets/flowey.png');
+    this.load.image('java', 'assets/java.png');
     this.load.image('space', 'assets/space.jpg');
     this.load.image('spaceship', 'assets/spaceship1.png');
     this.load.image('trash', 'assets/trash1.png');
@@ -63,10 +65,31 @@ function create() {
     // Збір сміття
     this.physics.add.collider(this.spaceship, this.trash, collectTrash, null, this);
 
+ // Додавання космічного сміття
+ this.trash = this.physics.add.group({
+    key: 'java',
+    repeat: 1,
+    setXY: { x: 400, y: 400, stepX: 300 }
+});
+
+this.physics.add.collider(this.spaceship, this.trash, collectJava, null, this);
 
 
 
 
+this.floweyGroup = this.physics.add.group();
+this.flowey = this.floweyGroup.create(Phaser.Math.Between(100, 900), Phaser.Math.Between(100, 400), 'flowey');
+this.flowey.setVelocity(Phaser.Math.Between(-200, 200), Phaser.Math.Between(-200, 200)); // Встановлення випадкової швидкості Flowey
+
+
+
+this.physics.add.overlap(this.spaceship, this.floweyGroup, function(spaceship, flowey) {
+    var points = Phaser.Math.Between(0, 1) === 0 ? -100 : 100; // Випадково визначаємо, чи додати чи відняти 100 балів
+    this.score += points;
+    this.scoreText.setText('Score: ' + this.score);
+
+    flowey.destroy(); // Знищення об'єкта Flowey після зіткнення
+}, null, this);
 
 
 
@@ -135,6 +158,55 @@ this.time.addEvent({
     },
     callbackScope: this
 });
+
+
+
+
+// Додавання сміття java
+this.time.addEvent({
+    delay: 3000, // кожні 3 секунди
+    loop: true,
+    callback: function () {
+        var side = Phaser.Math.Between(0, 3); // вибираємо випадкову сторону
+        var x;
+        var y;
+
+        if (side === 0) { // зліва
+            x = 0;
+            y = Phaser.Math.Between(0, game.config.height);
+        } else if (side === 1) { // зверху
+            x = Phaser.Math.Between(0, game.config.width);
+            y = 0;
+        } else if (side === 2) { // справа
+            x = game.config.width;
+            y = Phaser.Math.Between(0, game.config.height);
+        } else { // знизу
+            x = Phaser.Math.Between(0, game.config.width);
+            y = game.config.height;
+        }
+
+        var trash = this.trash.create(x, y, 'java'); 
+        this.physics.moveToObject(trash, this.spaceship, 200); 
+ 
+    },
+    callbackScope: this
+});
+
+
+
+this.time.addEvent({
+    delay: 10000, // кожні 10 секунд
+    loop: true,
+    callback: function () {
+        var flowey = this.floweyGroup.create(Phaser.Math.Between(100, 900), Phaser.Math.Between(100, 400), 'flowey');
+        this.physics.add.overlap(this.spaceship, flowey, function(spaceship, flowey) {
+            addRandomPoints.call(this); // Викликаємо функцію, що додає випадкову кількість очок
+            flowey.destroy(); // Знищення об'єкта Flowey після зіткнення
+        }, null, this);
+    },
+    callbackScope: this
+});
+
 
 
 
@@ -227,6 +299,60 @@ function collectTrash(spaceship, trash) {
     checkScore.call(this);
 }
 
+
+
+function collectJava(spaceship, java) {
+    java.disableBody(true, true);
+    this.score += 20; // За сміття типу "java" можна додати більше балів
+    this.scoreText.setText('Score: ' + this.score);
+    checkScore.call(this);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function addRandomPoints() {
+    var points = Phaser.Math.Between(0, 1) === 0 ? -100 : 100; // Випадково визначаємо, чи додати чи відняти 100 балів
+    this.score += points;
+    this.scoreText.setText('Score: ' + this.score);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Функція оновлення таймера
 function updateTimer() {
     this.timeText.setText('Time: ' + this.timer.repeatCount);
@@ -248,6 +374,9 @@ function shipHit(spaceship, dmg) {
     this.score -= 50;
     this.scoreText.setText('Score: ' + this.score);
 
+
+    
+
     if (this.score < 0) {
        
         this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
@@ -267,7 +396,7 @@ function stopGenerating() {
 }
 
 function checkScore() {
-    if (this.score >= 200) {
+    if (this.score >= 500) {
         playWinVideoAndSound.call(this); // Викликати функцію playWinVideoAndSound у контексті сцени
         this.scene.pause(); // Пауза сцени
     }
