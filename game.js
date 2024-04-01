@@ -93,6 +93,57 @@ this.physics.add.overlap(this.spaceship, this.floweyGroup, function(spaceship, f
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (this.score < 0) {
+       
+    this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
+    this.physics.pause(); // Призупинення фізики гри
+    this.timer.paused = true; // Призупинення таймера
+    setTimeout(() => {
+        location.reload(); // Оновлення сторінки через 3 секунд
+    }, 3000);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Додавання лазерів
     this.dmg = this.physics.add.group();
 
