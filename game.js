@@ -33,6 +33,9 @@ function preload() {
     this.load.video('2', 'assets/2.mp4', 'loadeddata', false, true); // Завантаження відео
     this.load.audio('1', 'assets/1.mp3'); // Завантаження аудіо
     this.load.audio('ford', 'assets/ford.mp3'); // Завантаження аудіо
+    this.load.audio('win', 'assets/win.mp3'); // Завантаження аудіо
+    this.load.audio('lose', 'assets/lose.mp3'); // Завантаження аудіо
+
 
     this.load.image('flowey', 'assets/flowey.png');
     this.load.image('java', 'assets/java.png');
@@ -84,15 +87,21 @@ this.flowey.setVelocity(Phaser.Math.Between(-200, 200), Phaser.Math.Between(-200
 
 
 this.physics.add.overlap(this.spaceship, this.floweyGroup, function(spaceship, flowey) {
-    var points = Phaser.Math.Between(0, 1) === 0 ? -100 : 100; // Випадково визначаємо, чи додати чи відняти 100 балів
+    var points = Phaser.Math.Between(0, 1) === 0 ? -150 : 150; // Випадково визначаємо, чи додати чи відняти 100 балів
     this.score += points;
     this.scoreText.setText('Score: ' + this.score);
 
+    if (this.score < 0) { // Перевіряємо, чи рахунок від'ємний
+        this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
+        this.physics.pause(); // Призупинення фізики гри
+        this.timer.paused = true; // Призупинення таймера
+        setTimeout(() => {
+            location.reload(); // Оновлення сторінки через 3 секунди
+        }, 3000);
+    }
+
     flowey.destroy(); // Знищення об'єкта Flowey після зіткнення
 }, null, this);
-
-
-
 
 
 
@@ -140,7 +149,36 @@ if (this.score < 0) {
 
 
 
+// Додавання лазерів
+this.dmg = this.physics.add.group();
 
+this.time.addEvent({
+    delay: 1700, // кожні 2 секунди
+    loop: true,
+    callback: function () {
+        var side = Phaser.Math.Between(0, 3);
+        var x;
+        var y;
+
+        if (side === 0) {
+            x = 0;
+            y = Phaser.Math.Between(0, game.config.height);
+        } else if (side === 1) {
+            x = Phaser.Math.Between(0, game.config.width);
+            y = 0;
+        } else if (side === 2) {
+            x = game.config.width;
+            y = Phaser.Math.Between(0, game.config.height);
+        } else {
+            x = Phaser.Math.Between(0, game.config.width);
+            y = game.config.height;
+        }
+
+        var dmg = this.dmg.create(x, y, 'dmg'); // змінив змінну laser на dmg
+        this.physics.moveToObject(dmg, this.spaceship, 200); 
+    },
+    callbackScope: this
+});
 
 
 
@@ -148,7 +186,7 @@ if (this.score < 0) {
     this.dmg = this.physics.add.group();
 
     this.time.addEvent({
-        delay: 700, // кожні 0.7 секунди
+        delay: 950, // кожні 0.95 секунд
         loop: true,
         callback: function () {
             var side = Phaser.Math.Between(0, 3);
@@ -182,7 +220,7 @@ if (this.score < 0) {
 
 // Додавання сміття
 this.time.addEvent({
-    delay: 1000, // кожні 1 секунди
+    delay: 1400, // кожні 1.4 секунди
     loop: true,
     callback: function () {
         var side = Phaser.Math.Between(0, 3); // вибираємо випадкову сторону
@@ -215,7 +253,7 @@ this.time.addEvent({
 
 // Додавання сміття java
 this.time.addEvent({
-    delay: 3000, // кожні 3 секунди
+    delay: 3400, // кожні 3.4 секунди
     loop: true,
     callback: function () {
         var side = Phaser.Math.Between(0, 3); // вибираємо випадкову сторону
@@ -246,7 +284,7 @@ this.time.addEvent({
 
 
 this.time.addEvent({
-    delay: 10000, // кожні 10 секунд
+    delay: 9000, // кожні 9 секунд
     loop: true,
     callback: function () {
         var flowey = this.floweyGroup.create(Phaser.Math.Between(100, 900), Phaser.Math.Between(100, 400), 'flowey');
@@ -323,8 +361,8 @@ function update() {
 
 
 
-    // Перевіряємо рахунок і відтворюємо звук "ford", якщо рахунок менше 200
-    if (this.score < 200) {
+    // Перевіряємо рахунок і відтворюємо звук "ford", якщо рахунок менше 500
+    if (this.score < 500) {
         playFordSound.call(this);
     }
 
@@ -411,14 +449,21 @@ function updateTimer() {
 
 // Функція завершення гри
 function gameOver() {
+    audio = this.sound.add('lose');
+    audio.play();
+
     this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' });
-    this.physics.pause();
+    this.scene.pause(); // Пауза сцени
     this.timer.paused = true;
     
     setTimeout(() => {
         location.reload(); // Оновлення сторінки через 3 секунд
     }, 3000);
 }
+
+
+
+
 
 // Реакція на зіткнення корабля з лазерами
 function shipHit(spaceship, dmg) {
@@ -430,8 +475,12 @@ function shipHit(spaceship, dmg) {
 
     if (this.score < 0) {
        
-        this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
-        this.physics.pause(); // Призупинення фізики гри
+        audio = this.sound.add('lose');
+        audio.play();
+    
+        this.add.text(310, 220, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
+
+        this.scene.pause(); // Пауза сцени
         this.timer.paused = true; // Призупинення таймера
         setTimeout(() => {
             location.reload(); // Оновлення сторінки через 3 секунд
@@ -440,6 +489,21 @@ function shipHit(spaceship, dmg) {
 
     dmg.destroy();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Функція для зупинки генерації сміття та лазерів
 function stopGenerating() {
@@ -455,6 +519,12 @@ function checkScore() {
 
 // Функція для відтворення відео та звуку при досягненні 200 очок
 function playWinVideoAndSound() {
+    audio = this.sound.add('win');
+    audio.play();
+
+    this.add.text(400, 250, 'YOU WIN', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
+  
+    setTimeout(() => {
     // Відтворення звуку
     audio = this.sound.add('1');
     audio.play();
@@ -465,8 +535,10 @@ function playWinVideoAndSound() {
     
 
     setTimeout(() => {
-        location.reload(); // Оновлення сторінки через 210 секунд
-    }, 210000);
+        location.reload(); // Оновлення сторінки через 200 секунд
+    }, 200000);  
+}, 2500); // Затримка перед початком відтворення
+
 }
 
 
