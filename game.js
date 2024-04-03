@@ -108,7 +108,7 @@ this.physics.add.overlap(this.spaceship, this.floweyGroup, function(spaceship, f
 if (this.score < 0) {
     audio = this.sound.add('lose');
     audio.play();
-    
+
     this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
     this.physics.pause(); // Призупинення фізики гри
     this.timer.paused = true; // Призупинення таймера
@@ -513,13 +513,17 @@ function playWinVideoAndSound() {
     this.add.text(400, 250, 'YOU WIN', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
   
     setTimeout(() => {
-    // Відтворення звуку
+   // Відтворення відео
+   video = this.add.video(500, 250, '2'); // Позиція відео на екрані
+   video.play(true);
+   
+   
+   
+        // Відтворення звуку
     audio = this.sound.add('1');
     audio.play();
    
-    // Відтворення відео
-    video = this.add.video(500, 250, '2'); // Позиція відео на екрані
-    video.play(true);
+   
     
 
     setTimeout(() => {
