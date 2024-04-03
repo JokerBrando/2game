@@ -92,6 +92,8 @@ this.physics.add.overlap(this.spaceship, this.floweyGroup, function(spaceship, f
     this.scoreText.setText('Score: ' + this.score);
 
     if (this.score < 0) { // Перевіряємо, чи рахунок від'ємний
+        audio = this.sound.add('lose');
+        audio.play();
         this.add.text(400, 250, 'Game Over', { fontSize: '64px', fill: '#fff' }); // Виведення повідомлення "Game Over"
         this.physics.pause(); // Призупинення фізики гри
         this.timer.paused = true; // Призупинення таймера
